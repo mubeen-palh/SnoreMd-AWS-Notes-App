@@ -7,7 +7,6 @@ filter, edit, soft-delete notes for a patient and attach files.
 |----------------------------------------------|----------------------------------------------------|
 | [notes-backend/](notes-backend/)             | Serverless API — 7 Lambda handlers + SAM template  |
 | [notes-frontend/](notes-frontend/)           | React 18 + Vite SPA                                |
-| [architecture.md](architecture.md)           | System-design write-up + diagram (Part 1)          |
 
 ---
 
