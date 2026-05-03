@@ -190,4 +190,4 @@ Frontend tests cover [NoteForm](notes-frontend/src/components/NoteForm.test.jsx)
 - **Auth is mocked.** `clinicId` is *persisted* on every write but not yet *enforced* as a read filter — adding `FilterExpression: clinicId = :clinicId` is the next step once headers are replaced with verified claims.
 - The `q` substring filter is a DynamoDB `FilterExpression` (filters after the read). Fine at this scale, would move to a tag-keyed GSI or OpenSearch for larger tenants.
 - The sample test files under [notes-backend/__tests__/unit/handlers/](notes-backend/__tests__/unit/handlers/) are scaffolding from the SAM starter template (they reference renamed handlers `get-all-items` / `put-item`) — they're left as a starting point; meaningful coverage lives in the frontend tests.
-- No CI/CD, multi-env config, or audit-log pipeline (listed in the brief as optional bonuses).
+- No CI/CD, multi-env config, or audit-log pipeline.
