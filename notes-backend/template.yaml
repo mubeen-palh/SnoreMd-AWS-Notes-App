@@ -1,0 +1,156 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+
+Globals:
+  Function:
+    Runtime: nodejs18.x
+    Timeout: 30
+    MemorySize: 256
+    Environment:
+      Variables:
+        TABLE_NAME: Notes
+        ATTACHMENTS_BUCKET: snoremd-notes-attachments-mubeen-2026
+  HttpApi:
+    CorsConfiguration:
+      AllowOrigins:
+        - "*"
+      AllowHeaders:
+        - "Content-Type"
+        - "If-Match"
+        - "X-User-Id"
+        - "X-Clinic-Id"
+      AllowMethods:
+        - GET
+        - POST
+        - PUT
+        - DELETE
+        - OPTIONS
+
+Resources:
+
+  NotesTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: Notes
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: patientId
+          AttributeType: S
+        - AttributeName: noteId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: patientId
+          KeyType: HASH
+        - AttributeName: noteId
+          KeyType: RANGE
+
+  CreateNoteFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: .
+      Handler: src/handlers/create-note.handler
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: Notes
+      Events:
+        CreateNote:
+          Type: HttpApi
+          Properties:
+            Path: /patients/{patientId}/notes
+            Method: POST
+
+  ListNotesFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: .
+      Handler: src/handlers/list-notes.handler
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: Notes
+      Events:
+        ListNotes:
+          Type: HttpApi
+          Properties:
+            Path: /patients/{patientId}/notes
+            Method: GET
+
+  GetNoteFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: .
+      Handler: src/handlers/get-note-by-id.handler
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: Notes
+      Events:
+        GetNote:
+          Type: HttpApi
+          Properties:
+            Path: /patients/{patientId}/notes/{noteId}
+            Method: GET
+
+  UpdateNoteFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: .
+      Handler: src/handlers/update-note.handler
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: Notes
+      Events:
+        UpdateNote:
+          Type: HttpApi
+          Properties:
+            Path: /patients/{patientId}/notes/{noteId}
+            Method: PUT
+
+  DeleteNoteFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: .
+      Handler: src/handlers/delete-note.handler
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: Notes
+      Events:
+        DeleteNote:
+          Type: HttpApi
+          Properties:
+            Path: /patients/{patientId}/notes/{noteId}
+            Method: DELETE
+
+  PresignUploadFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: .
+      Handler: src/handlers/presign-upload.handler
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Action:
+                - s3:PutObject
+              Resource: "*"
+      Events:
+        PresignUpload:
+          Type: HttpApi
+          Properties:
+            Path: /uploads/presign
+            Method: POST
+
+  GetAttachmentUrlFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: .
+      Handler: src/handlers/get-attachment-url.handler
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Action:
+                - s3:GetObject
+              Resource: "*"
+      Events:
+        GetAttachmentUrl:
+          Type: HttpApi
+          Properties:
+            Path: /attachments
+            Method: GET
